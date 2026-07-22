@@ -1,0 +1,20 @@
+[Unit]
+Description=PharmaTest leaderboard API
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/nichlas/pharmatest/pharmatest_server.py
+Environment=PYTHONUNBUFFERED=1
+Environment=PHARMATEST_PORT=8798
+Environment=PHARMATEST_SCORES=/home/nichlas/pharmatest/scores.toml
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/nichlas/pharmatest
+
+[Install]
+WantedBy=default.target

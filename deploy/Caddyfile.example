@@ -1,0 +1,79 @@
+# Add these handlers inside the relevant apothictech.se site block.
+
+handle /api/pharmatest* {
+	reverse_proxy 127.0.0.1:8798
+}
+handle /api/forfattning* {
+	reverse_proxy 127.0.0.1:8798
+}
+handle /api/galenik* {
+	reverse_proxy 127.0.0.1:8798
+}
+handle /api/farmakognosi* {
+	reverse_proxy 127.0.0.1:8798
+}
+handle /api/interaktioner* {
+	reverse_proxy 127.0.0.1:8798
+}
+handle /api/doslab* {
+	reverse_proxy 127.0.0.1:8798
+}
+handle /api/pungdjur* {
+	reverse_proxy 127.0.0.1:8798
+}
+
+@inbildningsportalenExact path /inbildningsportalen
+redir @inbildningsportalenExact /inbildningsportalen/ 308
+handle_path /inbildningsportalen/* {
+	root * /srv/apothictech-site/inbildningsportalen
+	file_server
+}
+
+@pharmatestExact path /pharmatest
+redir @pharmatestExact /pharmatest/ 308
+handle_path /pharmatest/* {
+	root * /srv/apothictech-site/pharmatest
+	file_server
+}
+
+@forfattningExact path /forfattningstest
+redir @forfattningExact /forfattningstest/ 308
+handle_path /forfattningstest/* {
+	root * /srv/apothictech-site/forfattningstest
+	file_server
+}
+
+@galenikExact path /galenik
+redir @galenikExact /galenik/ 308
+handle_path /galenik/* {
+	root * /srv/apothictech-site/galenik
+	file_server
+}
+
+@farmakognosiExact path /farmakognosi
+redir @farmakognosiExact /farmakognosi/ 308
+handle_path /farmakognosi/* {
+	root * /srv/apothictech-site/farmakognosi
+	file_server
+}
+
+@interaktionerExact path /interaktioner
+redir @interaktionerExact /interaktioner/ 308
+handle_path /interaktioner/* {
+	root * /srv/apothictech-site/interaktioner
+	file_server
+}
+
+@doslabExact path /doslab
+redir @doslabExact /doslab/ 308
+handle_path /doslab/* {
+	root * /srv/apothictech-site/doslab
+	file_server
+}
+
+@pungdjursquizExact path /pungdjursquiz
+redir @pungdjursquizExact /pungdjursquiz/ 308
+handle_path /pungdjursquiz/* {
+	root * /srv/apothictech-site/pungdjursquiz
+	file_server
+}

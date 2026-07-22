@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#132c2a">
+  <meta name="description" content="PharmaTest – ett quiz i farmakologi, farmakokinetik, farmakodynamik och läkemedelskemi.">
+  <title>PharmaTest</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f5f2e9;
+      --muted: #aebdb8;
+      --panel: rgba(12, 31, 30, .88);
+      --panel-2: #173936;
+      --line: rgba(211, 237, 225, .15);
+      --mint: #86e3bd;
+      --mint-deep: #2aa675;
+      --amber: #f2b966;
+      --red: #ff8279;
+      --green: #77dfa9;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .32);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #071817; }
+    body {
+      margin: 0;
+      min-height: 100svh;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% 12%, rgba(42, 166, 117, .24), transparent 34rem),
+        radial-gradient(circle at 92% 88%, rgba(242, 185, 102, .15), transparent 32rem),
+        linear-gradient(145deg, #071817 0%, #102c29 48%, #081b1a 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .2;
+      background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    button, select, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .shell {
+      width: min(920px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 0 max(36px, env(safe-area-inset-bottom));
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: #062019;
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(145deg, var(--mint), #e8f5c5);
+      box-shadow: 0 10px 30px rgba(76, 219, 157, .18);
+      transform: rotate(-4deg);
+    }
+
+    .brand h1 { margin: 0; font-size: clamp(1.35rem, 4vw, 1.85rem); letter-spacing: -.045em; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: .79rem; letter-spacing: .08em; text-transform: uppercase; }
+    .top-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .nav-link { min-height: 38px; padding: 0 13px; border: 1px solid transparent; border-radius: 12px; color: var(--muted); background: transparent; cursor: pointer; font-weight: 750; }
+    .nav-link:hover { color: var(--ink); border-color: var(--line); background: rgba(255,255,255,.035); }
+    .best { color: var(--muted); font-size: .86rem; text-align: right; }
+    .best strong { display: block; color: var(--amber); font-size: 1.1rem; }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .screen { display: none; padding: clamp(24px, 6vw, 52px); }
+    .screen.active { display: block; animation: appear .35s ease both; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--mint);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .hero h2, .result h2 {
+      max-width: 700px;
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 4.25rem);
+      line-height: .98;
+      letter-spacing: -.065em;
+    }
+
+    .hero-copy { max-width: 650px; margin: 20px 0 30px; color: var(--muted); font-size: clamp(1rem, 2.5vw, 1.13rem); line-height: 1.65; }
+    .controls { display: grid; grid-template-columns: 1.2fr .8fr .8fr; gap: 12px; margin-bottom: 16px; }
+    label { display: grid; gap: 8px; color: var(--muted); font-size: .79rem; font-weight: 750; letter-spacing: .05em; text-transform: uppercase; }
+    select, input {
+      width: 100%;
+      min-height: 50px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--ink);
+      background: #112f2c;
+      outline: none;
+    }
+    select { padding-right: 40px; }
+    select:focus, input:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(134,227,189,.12); }
+
+    .primary, .secondary {
+      min-height: 54px;
+      border: 0;
+      border-radius: 16px;
+      padding: 0 22px;
+      cursor: pointer;
+      font-weight: 850;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .primary { color: #062019; background: linear-gradient(135deg, var(--mint), #dff1aa); box-shadow: 0 12px 28px rgba(84, 214, 159, .16); }
+    .secondary { color: var(--ink); background: #1a3d39; border: 1px solid var(--line); }
+    .primary:hover, .secondary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .primary:active, .secondary:active { transform: translateY(1px); }
+
+    .scope { margin: 22px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.55; }
+    .scope strong { color: var(--ink); }
+
+    .leaderboard-panel { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .leaderboard-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .leaderboard-head h3 { margin: 0; font-size: 1.05rem; }
+    .leaderboard-head span { color: var(--muted); font-size: .75rem; }
+    .leaderboard { display: grid; gap: 7px; }
+    .leader-row { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; min-height: 40px; padding: 7px 10px; border-radius: 12px; background: rgba(255,255,255,.025); }
+    .leader-row .rank { color: var(--amber); font-weight: 900; text-align: center; }
+    .leader-row .leader-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .leader-row .leader-score { color: var(--muted); text-align: right; font-size: .82rem; }
+    .leader-row .leader-score strong { display: block; color: var(--ink); font-size: .94rem; }
+    .leader-empty { padding: 16px; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 12px; font-size: .85rem; }
+
+    .quiz { padding-top: 26px; }
+    .quiz-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .progress-copy { color: var(--muted); font-size: .86rem; }
+    .score-pill { display: flex; gap: 12px; color: var(--muted); font-size: .86rem; }
+    .score-pill strong { color: var(--ink); }
+    .progress { height: 5px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; margin-bottom: 32px; }
+    .progress span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--mint-deep), var(--mint)); transition: width .35s ease; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .tag { padding: 6px 10px; border-radius: 999px; background: rgba(134,227,189,.1); color: var(--mint); font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .tag.difficulty { background: rgba(242,185,102,.1); color: var(--amber); }
+    .question { margin: 0 0 26px; font-size: clamp(1.35rem, 4vw, 2.05rem); line-height: 1.28; letter-spacing: -.035em; }
+    .molecule-card { margin: 0 0 22px; padding: 12px; border-radius: 19px; background: #f7f7f4; text-align: center; overflow: hidden; }
+    .molecule-card[hidden] { display: none; }
+    .molecule-card img { display: block; width: min(100%, 500px); max-height: 280px; margin: auto; object-fit: contain; }
+    .molecule-card figcaption { margin-top: 5px; color: #53615e; font-size: .68rem; letter-spacing: .04em; }
+
+    .answers { display: grid; gap: 11px; }
+    .answer {
+      width: 100%;
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      align-items: center;
+      gap: 12px;
+      color: var(--ink);
+      text-align: left;
+      line-height: 1.4;
+      background: rgba(28, 66, 61, .62);
+      cursor: pointer;
+      transition: border-color .15s ease, transform .15s ease, background .15s ease;
+    }
+    .answer:hover:not(:disabled) { border-color: rgba(134,227,189,.55); transform: translateX(3px); }
+    .answer:disabled { cursor: default; opacity: .65; }
+    .answer .letter { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; color: var(--muted); background: rgba(255,255,255,.06); font-weight: 850; }
+    .answer.correct { border-color: var(--green); background: rgba(55, 158, 111, .22); opacity: 1; }
+    .answer.correct .letter { color: #062019; background: var(--green); }
+    .answer.wrong { border-color: var(--red); background: rgba(195, 61, 67, .18); opacity: 1; }
+    .answer.wrong .letter { color: #30100e; background: var(--red); }
+
+    .feedback { display: none; margin-top: 22px; padding: 18px; border-radius: 17px; background: rgba(4, 20, 19, .5); border: 1px solid var(--line); }
+    .feedback.show { display: block; animation: appear .25s ease both; }
+    .feedback h3 { margin: 0 0 7px; font-size: 1rem; }
+    .feedback p { margin: 0; color: var(--muted); line-height: 1.58; font-size: .94rem; }
+    .feedback .primary { width: 100%; margin-top: 16px; }
+
+    .result { text-align: center; }
+    .result h2 { margin-inline: auto; }
+    .result-orbit { width: 190px; height: 190px; margin: 30px auto; border-radius: 50%; display: grid; place-items: center; position: relative; background: radial-gradient(circle, #173d38 49%, transparent 51%); }
+    .result-orbit::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 7px solid rgba(134,227,189,.12); border-top-color: var(--mint); transform: rotate(35deg); }
+    .result-score { position: relative; font-size: 2.8rem; font-weight: 900; letter-spacing: -.07em; }
+    .result-score small { display: block; color: var(--muted); font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; }
+    .result-message { max-width: 600px; margin: 0 auto 24px; color: var(--muted); line-height: 1.6; }
+    .breakdown { max-width: 620px; margin: 0 auto 26px; display: grid; gap: 9px; text-align: left; }
+    .break-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 11px 14px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.025); }
+    .break-row span { color: var(--muted); }
+    .result-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+    .submit-score { max-width: 620px; margin: 0 auto 24px; padding: 18px; border: 1px solid var(--line); border-radius: 17px; background: rgba(4,20,19,.4); text-align: left; }
+    .submit-score h3 { margin: 0 0 6px; }
+    .submit-score > p { margin: 0 0 13px; color: var(--muted); font-size: .85rem; }
+    .name-row { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+    .name-row .primary { min-height: 50px; }
+    .save-status { min-height: 1.3em; margin: 9px 0 0 !important; color: var(--mint) !important; }
+    .disclaimer { margin: 18px auto 0; color: #81928d; font-size: .72rem; line-height: 1.5; }
+    body.embed .shell { width: min(920px, calc(100% - 20px)); padding-top: 12px; }
+    body.embed .shell > header { display: none; }
+
+    @media (max-width: 650px) {
+      .shell { width: min(100% - 20px, 920px); padding-top: max(12px, env(safe-area-inset-top)); }
+      header { padding: 0 5px; }
+      .mark { width: 41px; height: 41px; border-radius: 13px; }
+      .brand p { display: none; }
+      .top-nav { order: 3; width: 100%; justify-content: center; padding-top: 2px; }
+      header { flex-wrap: wrap; }
+      .nav-link { flex: 1; border-color: var(--line); background: rgba(255,255,255,.025); }
+      .best { font-size: .72rem; }
+      .card { border-radius: 22px; }
+      .screen { padding: 24px 18px 28px; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .controls label:first-child { grid-column: 1 / -1; }
+      .hero .primary { width: 100%; }
+      .name-row { grid-template-columns: 1fr; }
+      .name-row .primary { width: 100%; }
+      .quiz-top { align-items: flex-start; }
+      .score-pill { flex-direction: column; gap: 2px; text-align: right; }
+      .answer { padding: 13px 12px; grid-template-columns: 29px 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="mark">Rx</div>
+        <div><h1>PharmaTest</h1><p>molekyl → människa</p></div>
+      </div>
+      <nav class="top-nav" aria-label="Huvudnavigation">
+        <button class="nav-link" id="navHome">Start</button>
+        <button class="nav-link" id="navLeaderboard">🏆 Topplista</button>
+      </nav>
+      <div class="best">Bästa resultat<strong id="bestScore">–</strong></div>
+    </header>
+
+    <section class="card">
+      <div class="screen hero active" id="startScreen">
+        <p class="eyebrow">Farmakologiquiz</p>
+        <h2>Hur väl kan du läkemedlets resa?</h2>
+        <p class="hero-copy">Från receptorbindning och dos–respons till clearance, CYP-enzymer, farmakoforer och läkemedelsdesign. Välj nivå och kör.</p>
+        <div class="controls">
+          <label>Område
+            <select id="categorySelect">
+              <option value="all">Alla områden</option>
+              <option value="Farmakodynamik">Farmakodynamik</option>
+              <option value="Farmakokinetik">Farmakokinetik</option>
+              <option value="Läkemedelskemi">Farmakoforer & läkemedelskemi</option>
+              <option value="Klinisk farmakologi">Klinisk farmakologi</option>
+            </select>
+          </label>
+          <label>Nivå
+            <select id="difficultySelect">
+              <option value="all">Blandad</option>
+              <option value="Grund">Grund</option>
+              <option value="Fördjupning">Fördjupning</option>
+            </select>
+          </label>
+          <label>Frågor
+            <select id="countSelect">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="all">Alla</option>
+            </select>
+          </label>
+        </div>
+        <button class="primary" id="startButton">Starta quizet →</button>
+        <p class="scope"><strong id="bankCount"></strong> faktagranskade instuderingsfrågor med direkt återkoppling. Frågorna och svarsalternativen blandas varje gång.</p>
+        <section class="leaderboard-panel" id="leaderboardPanel" aria-labelledby="leaderboardTitle">
+          <div class="leaderboard-head"><h3 id="leaderboardTitle">🏆 Topplista</h3><span>Bästa resultat per namn</span></div>
+          <div class="leaderboard" id="leaderboard"><div class="leader-empty">Hämtar topplistan…</div></div>
+        </section>
+        <p class="disclaimer">Utbildningsmaterial – inte medicinsk rådgivning. Kontrollera alltid kliniska beslut mot aktuella riktlinjer och produktinformation.</p>
+      </div>
+
+      <div class="screen quiz" id="quizScreen">
+        <div class="quiz-top">
+          <div class="progress-copy" id="progressCopy">Fråga 1 av 20</div>
+          <div class="score-pill"><span>Poäng <strong id="scoreValue">0</strong></span><span>🔥 <strong id="streakValue">0</strong></span></div>
+        </div>
+        <div class="progress"><span id="progressBar"></span></div>
+        <div class="tags"><span class="tag" id="categoryTag"></span><span class="tag difficulty" id="difficultyTag"></span></div>
+        <figure class="molecule-card" id="moleculeCard" hidden>
+          <img id="moleculeImage" alt="">
+          <figcaption>2D-struktur från PubChem</figcaption>
+        </figure>
+        <h2 class="question" id="questionText"></h2>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback">
+          <h3 id="feedbackTitle"></h3>
+          <p id="feedbackText"></p>
+          <button class="primary" id="nextButton">Nästa fråga →</button>
+        </div>
+      </div>
+
+      <div class="screen result" id="resultScreen">
+        <p class="eyebrow">Resultat</p>
+        <h2 id="resultHeading">Bra jobbat!</h2>
+        <div class="result-orbit"><div class="result-score"><span id="resultPercent">0%</span><small id="resultFraction">0 av 0 rätt</small></div></div>
+        <p class="result-message" id="resultMessage"></p>
+        <div class="breakdown" id="breakdown"></div>
+        <div class="submit-score" id="submitScore">
+          <h3>Spara ditt resultat</h3>
+          <p>Topplistan sparar ditt bästa resultat per namn på servern.</p>
+          <div class="name-row"><input id="playerName" maxlength="24" autocomplete="nickname" placeholder="Ditt namn" aria-label="Ditt namn"><button class="primary" id="saveScoreButton">Spara</button></div>
+          <p class="save-status" id="saveStatus" role="status"></p>
+        </div>
+        <div class="result-actions"><button class="primary" id="retryButton">Kör igen</button><button class="secondary" id="homeButton">Ändra upplägg</button></div>
+        <p class="disclaimer">Resultatet är ett instuderingsstöd och ska inte användas för behandlingsbeslut.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {c:"Farmakodynamik",d:"Grund",q:"Vad beskriver ett läkemedels potens?",a:["Hur stor dos eller koncentration som krävs för en viss effekt","Den maximala effekt läkemedlet kan uppnå","Hur snabbt läkemedlet elimineras","Hur selektivt läkemedlet metaboliseras"],x:0,e:"Potens anger vilken koncentration eller dos som behövs för en given effekt, ofta uttryckt som EC50. Efficacy beskriver i stället den maximala effekten."},
+      {c:"Farmakodynamik",d:"Grund",q:"Vilken parameter beskriver en agonists maximala möjliga effekt?",a:["Emax","EC50","Kd","Clearance"],x:0,e:"Emax är modellens maximala effekt och speglar efficacy. EC50 är koncentrationen som ger hälften av Emax."},
+      {c:"Farmakodynamik",d:"Grund",q:"Vad gör en kompetitiv reversibel antagonist typiskt med agonistens dos–responskurva?",a:["Förskjuter den åt höger utan att sänka Emax","Sänker Emax utan att ändra EC50","Förskjuter den åt vänster","Eliminerar all basal receptoraktivitet"],x:0,e:"En kompetitiv antagonist kan övervinnas med mer agonist. Därför ökar agonistens skenbara EC50, medan Emax vanligen kan nås."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"Vad kännetecknar en irreversibel eller icke-kompetitiv antagonist när receptorreserven är förbrukad?",a:["Agonistens Emax minskar","Agonistens Emax ökar","Agonistens affinitet ökar alltid","Eliminationen blir mättnadsbar"],x:0,e:"När tillräckligt många receptorer inte längre kan signalera går antagonismen inte att övervinna med mer agonist och maximal effekt faller."},
+      {c:"Farmakodynamik",d:"Grund",q:"Vad är en partiell agonist?",a:["En ligand som ger lägre maximal effekt än en full agonist även vid full receptorockupation","En antagonist som bara binder hälften av receptorerna","En agonist med kort halveringstid","En ligand utan egenaktivitet"],x:0,e:"Partiella agonister har lägre efficacy. I närvaro av en full agonist kan de dessutom fungera funktionellt antagonistiskt genom att konkurrera om receptorerna."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"Hur skiljer sig en invers agonist från en neutral antagonist?",a:["Den minskar receptorns konstitutiva aktivitet","Den binder irreversibelt","Den ökar alltid receptorantalet","Den saknar affinitet"],x:0,e:"En invers agonist stabiliserar en mindre aktiv receptorkonformation och sänker basal signalering. En neutral antagonist blockerar ligander utan egen effekt på basalaktiviteten."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"Vad innebär receptorreserv (spare receptors)?",a:["Maximal effekt kan nås utan att alla receptorer är ockuperade","Receptorer lagras intracellulärt men kan aldrig aktiveras","Alla receptorer har samma ligandaffinitet","Antagonister saknar effekt"],x:0,e:"Effektiv signalamplifiering kan göra att Emax nås vid mindre än 100 % receptorockupation. Då kan EC50 vara lägre än Kd."},
+      {c:"Farmakodynamik",d:"Grund",q:"Vad är terapeutiskt index i sin klassiska form?",a:["Kvoten TD50/ED50","Kvoten EC50/Emax","Kvoten dos/clearance","Kvoten Vd/halveringstid"],x:0,e:"Terapeutiskt index jämför dosen som ger toxicitet hos 50 % med dosen som ger önskad effekt hos 50 %. Ett större värde antyder bredare säkerhetsmarginal."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"En positiv allosterisk modulator (PAM) gör typiskt vad?",a:["Förstärker en agonists effekt genom bindning på ett annat ställe än det ortosteriska","Aktiverar alltid receptorn maximalt helt på egen hand","Blockerar ligandens absorption i tarmen","Ökar renal elimination"],x:0,e:"En PAM binder ett allosteriskt säte och ökar agonistens affinitet och/eller efficacy. Vissa PAM har liten eller ingen agonism utan den ortosteriska liganden."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"Vad beskriver Hill-koefficienten i en empirisk dos–responsmodell främst?",a:["Kurvans branthet","Läkemedlets halveringstid","Antalet metaboliter","Absolut biotillgänglighet"],x:0,e:"Hill-koefficienten styr dos–responskurvans lutning. Den kan antyda kooperativitet men bör inte automatiskt tolkas som exakt antal bindningsställen."},
+      {c:"Farmakodynamik",d:"Grund",q:"Vilken receptortyp ger oftast snabbast direkt cellulärt svar?",a:["Ligandstyrd jonkanal","Nukleär receptor","Receptor som ändrar genuttryck","Intracellulär steroidreceptor"],x:0,e:"Ligandstyrda jonkanaler kan ändra membranpotential inom millisekunder. Genomiska receptorer verkar vanligen långsammare."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"Vad är tachyfylaxi?",a:["Snabbt avtagande effekt efter upprepade doser på kort tid","En immunologisk typ I-reaktion","Fördröjd läkemedelselimination","Ökad effekt efter långtidsbehandling"],x:0,e:"Tachyfylaxi är snabbt utvecklad tolerans, exempelvis genom mediatoruttömning, receptorfosforylering eller desensitisering."},
+
+      {c:"Farmakokinetik",d:"Grund",q:"Vilka fyra processer sammanfattas ofta med ADME?",a:["Absorption, distribution, metabolism och exkretion","Affinitet, dos, maximal effekt och efficacy","Aktivering, diffusion, modulation och elimination","Administration, depå, molekylvikt och effekt"],x:0,e:"ADME beskriver läkemedlets väg genom kroppen: absorption, distribution, metabolism och exkretion."},
+      {c:"Farmakokinetik",d:"Grund",q:"Vad är absolut biotillgänglighet?",a:["Andelen av en extravaskulär dos som når systemkretsloppet oförändrad jämfört med intravenös dos","Andelen läkemedel som är proteinbundet","Andelen dos som når receptorn","Andelen som utsöndras i urin"],x:0,e:"Intravenös administration räknas som 100 % systemisk tillgänglighet. AUC, korrigerad för dos, används för jämförelsen."},
+      {c:"Farmakokinetik",d:"Grund",q:"Vad menas med första passage-metabolism?",a:["Metabolism i tarmvägg och lever innan en oral dos når systemkretsloppet","Första filtreringen i glomerulus","Den snabbaste distributionsfasen efter IV-dos","Metabolism efter att läkemedlet lämnat kroppen"],x:0,e:"Efter absorption passerar många orala läkemedel portacirkulationen och kan metaboliseras i tarm och lever innan de når systemkretsloppet."},
+      {c:"Farmakokinetik",d:"Grund",q:"Vad beskriver distributionsvolymen Vd?",a:["En skenbar volym som relaterar mängden läkemedel i kroppen till plasmakoncentrationen","Den verkliga blodvolymen","Den volym urin som bildas per dygn","Volymen av en tablett efter upplösning"],x:0,e:"Vd = mängd i kroppen/plasmakoncentration. Ett mycket stort Vd antyder omfattande vävnadsdistribution; det är inte en anatomisk volym."},
+      {c:"Farmakokinetik",d:"Grund",q:"Vad beskriver clearance?",a:["Den plasmavolym som renas från läkemedel per tidsenhet","Mängden läkemedel som absorberas per dos","Tiden till maximal koncentration","Andelen receptorockupation"],x:0,e:"Clearance har enheten volym/tid och summerar eliminerande organs kapacitet, exempelvis renal och hepatisk clearance."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vilken relation gäller för halveringstid vid linjär en-kompartmentkinetik?",a:["t½ ≈ 0,693 × Vd / clearance","t½ = clearance / Vd","t½ = dos × AUC","t½ = biotillgänglighet / clearance"],x:0,e:"Halveringstiden ökar med distributionsvolymen och minskar med clearance: t½ = ln(2) × Vd/CL."},
+      {c:"Farmakokinetik",d:"Grund",q:"Ungefär hur många halveringstider krävs vanligen för att nå över 95 % av steady state vid upprepad dosering?",a:["Cirka 5","Cirka 1","Cirka 2","Cirka 20"],x:0,e:"Efter 4 halveringstider är nivån cirka 94 % och efter 5 cirka 97 % av steady state, förutsatt linjär kinetik och oförändrat dosintervall."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vad avgör främst en laddningsdos?",a:["Målkoncentration, distributionsvolym och biotillgänglighet","Clearance och dosintervall enbart","Halveringstid enbart","Renal utsöndringsfraktion enbart"],x:0,e:"Laddningsdos ≈ målkoncentration × Vd / F. Underhållsdosen styrs däremot framför allt av clearance och önskad exponering."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vad avgör främst doseringshastigheten vid underhållsbehandling?",a:["Clearance och önskad steady state-koncentration","Distributionsvolym och receptoraffinitet","Tmax och tablettens färg","Proteinbindning utan hänsyn till clearance"],x:0,e:"Doseringshastighet ≈ CL × målkoncentration / F. Kroppen måste tillföras läkemedel i samma takt som det elimineras."},
+      {c:"Farmakokinetik",d:"Grund",q:"Vid första ordningens kinetik elimineras…",a:["En konstant andel per tidsenhet","En konstant mängd per tidsenhet","Alltid exakt halva dosen per minut","Inget läkemedel innan en tröskel nås"],x:0,e:"Första ordningens elimination innebär att hastigheten är proportionell mot koncentrationen, så en konstant fraktion elimineras per tidsenhet."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vad händer vid nollte ordningens elimination?",a:["En ungefär konstant mängd elimineras per tidsenhet","En konstant andel elimineras per tidsenhet","Clearance ökar linjärt utan gräns","Halveringstiden är alltid konstant"],x:0,e:"När en elimineringsväg är mättad kan en konstant mängd, snarare än andel, elimineras per tidsenhet. Då blir halveringstiden dosberoende."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vilken förändring ökar den renala utsöndringen av en svag syra?",a:["Alkalinisering av urinen","Försurning av urinen","Ökad plasmaproteinbindning","Hämmad glomerulär filtration"],x:0,e:"I mer alkalisk urin joniseras en svag syra i högre grad, återabsorberas sämre passivt och fångas i urinen (ion trapping)."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vilken del av ett proteinbundet läkemedel kan filtreras direkt i glomerulus?",a:["Den fria, obundna fraktionen","Den albuminbundna fraktionen","Endast den irreversibelt bundna fraktionen","Ingen fraktion"],x:0,e:"I normalfallet filtreras fri läkemedelsmolekyl. Bundet läkemedel kan fungera som reservoar och dissociera när fri substans försvinner."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vad mäter AUC i en koncentration–tidskurva?",a:["Total systemisk exponering","Enbart maximal koncentration","Enbart absorptionshastighet","Receptorns efficacy"],x:0,e:"Arean under kurvan speglar total exponering. För en IV-dos vid linjär kinetik gäller AUC = dos/clearance."},
+      {c:"Farmakokinetik",d:"Grund",q:"Vilken administrationsväg ger definitionsmässigt 100 % biotillgänglighet?",a:["Intravenös","Peroral","Subkutan","Rektal"],x:0,e:"En intravenös dos når systemkretsloppet direkt. Andra vägar kan ge hög biotillgänglighet men räknas inte definitionsmässigt som 100 %."},
+
+      {c:"Läkemedelskemi",d:"Grund",q:"Vad är en farmakofor?",a:["Det rumsliga arrangemang av kemiska egenskaper som krävs för optimal interaktion med ett biologiskt mål","Den del av ett läkemedel som alltid är toxisk","Ett specifikt enzym som metaboliserar alla läkemedel","Ett varumärke för en aktiv substans"],x:0,e:"En farmakofor abstraherar nödvändiga egenskaper, exempelvis vätebindningsdonatorer, acceptorer, laddningar och hydrofoba centra samt deras tredimensionella relationer."},
+      {c:"Läkemedelskemi",d:"Grund",q:"Vilken egenskap är en typisk farmakoforfeature?",a:["Vätebindningsacceptor","Tablettens färg","Förpackningens volym","Tillverkningsdatum"],x:0,e:"Vanliga features är vätebindningsdonator/acceptor, aromatiska eller hydrofoba centra samt positiva och negativa joniserbara grupper."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Vad är ett bioisosteriskt utbyte?",a:["Att ersätta en grupp med en annan som bevarar viktiga biologiska egenskaper men kan ändra exempelvis metabolism eller selektivitet","Att göra samma molekyl radioaktiv","Att blanda två enantiomerer","Att byta administrationsväg utan molekyländring"],x:0,e:"Bioisosterer används för att behålla önskad bindning eller geometri men optimera exempelvis potens, selektivitet, löslighet eller metabol stabilitet."},
+      {c:"Läkemedelskemi",d:"Grund",q:"Vad beskriver logP?",a:["Fördelningen av den oladdade formen mellan oktanol och vatten","Läkemedlets halveringstid i plasma","Antalet protoner i molekylen","Proteinets isoelektriska punkt"],x:0,e:"logP är logaritmen av fördelningskoefficienten för neutral substans mellan en lipofil och en vattenfas. logD tar även hänsyn till joniserade former vid angivet pH."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Varför är pKa viktigt för ett läkemedel?",a:["Det påverkar joniseringsgrad, löslighet, permeabilitet och ibland målbindning vid ett visst pH","Det bestämmer alltid molekylvikten","Det anger den maximala kliniska dosen","Det är samma sak som logP"],x:0,e:"Förhållandet mellan pH och pKa avgör hur stor andel som är joniserad. Jonisering påverkar både vattenlöslighet, membranpassage och elektrostatiska interaktioner."},
+      {c:"Läkemedelskemi",d:"Grund",q:"Vilket ingår i Lipinskis tumregel?",a:["Högst ungefär 5 vätebindningsdonatorer och 10 acceptorer","Exakt 5 aromatiska ringar","Molekylvikt över 1000 Da","Minst 10 stereocentra"],x:0,e:"Tumregeln omfattar ungefär MW ≤500, logP ≤5, H-bindningsdonatorer ≤5 och acceptorer ≤10. Den är en heuristik för oral drug-likeness, inte en naturlag."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Vad är en prodrug?",a:["En substans som omvandlas i kroppen till en mer aktiv läkemedelsform","En orenhet som alltid måste avlägsnas","Ett läkemedel utan biologisk målmolekyl","En antidot mot modersubstansen"],x:0,e:"Prodrugs kan förbättra absorption, distribution, selektiv leverans eller tolerabilitet och aktiveras enzymatiskt eller kemiskt i kroppen."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Varför kan två enantiomerer av samma substans ha olika effekt?",a:["Biologiska mål är kirala och kan känna igen stereoisomererna olika","De har alltid olika molekylformel","Endast enantiomerer kan bilda salter","De har olika antal atomer"],x:0,e:"Receptorer, enzymer och transportörer är tredimensionella och kirala. Enantiomerer kan därför skilja i potens, selektivitet, metabolism och toxicitet."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Vad mäter ligand efficiency ungefär?",a:["Bindningsenergi eller potens i relation till antalet tunga atomer","Andel absorberad dos","Antal metaboliter per timme","Klinisk effekt per tablett"],x:0,e:"Ligand efficiency normaliserar bindningsstyrka mot molekylstorlek och kan hjälpa till att jämföra hur effektivt olika fragment eller ligander använder sina atomer."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Vilken molekylär förändring ökar ofta vattenlösligheten men kan försämra passiv membranpermeabilitet?",a:["Införande av en permanent laddad grupp","Ökad lipofil yta","Fler sammanfogade aromatiska ringar","Borttagning av alla heteroatomer"],x:0,e:"Permanent eller stark jonisering gynnar hydratisering och löslighet men kan göra passage genom lipidmembran svårare utan transportör."},
+      {c:"Läkemedelskemi",d:"Grund",q:"Vad innebär struktur–aktivitetsrelation (SAR)?",a:["Sambandet mellan molekylära strukturändringar och biologisk aktivitet","Sambandet mellan dos och patientens ålder enbart","En metod för att mäta blodtryck","Regler för läkemedelsnamn"],x:0,e:"SAR-studier kartlägger hur kemiska modifieringar påverkar potens, selektivitet och andra relevanta egenskaper och vägleder optimering."},
+
+      {c:"Klinisk farmakologi",d:"Grund",q:"Vad händer typiskt när ett läkemedel som är CYP-substrat ges med en stark CYP-hämmare?",a:["Exponeringen för substratet kan öka","Substratet elimineras alltid snabbare","Substratets biotillgänglighet blir alltid noll","Ingen interaktion är möjlig"],x:0,e:"En hämmare kan minska metabolismen och öka koncentration/AUC för ett känsligt substrat, med risk för dosberoende biverkningar."},
+      {c:"Klinisk farmakologi",d:"Grund",q:"Vad händer typiskt när ett CYP-substrat ges med en enzyminducerare?",a:["Exponeringen kan minska genom snabbare metabolism","Exponeringen ökar alltid omedelbart","Renal filtration upphör","Receptorantalet blir noll"],x:0,e:"Induktion ökar uttrycket eller aktiviteten hos metaboliserande enzymer och kan sänka substratets exponering. Effekten byggs ofta upp och avtar över dagar."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",q:"Vilket påstående om enzyminduktion är mest korrekt?",a:["Den utvecklas ofta långsammare än direkt enzymhämning eftersom nya proteiner behöver bildas","Den är alltid fullständig efter första dosen","Den påverkar endast intravenösa läkemedel","Den saknar klinisk betydelse"],x:0,e:"Induktion kräver ofta förändrat genuttryck och proteinsyntes och har därför fördröjt insättande och avklingande jämfört med många direkta hämningar."},
+      {c:"Klinisk farmakologi",d:"Grund",q:"När är terapeutisk läkemedelsmonitorering (TDM) särskilt användbar?",a:["Vid smalt terapeutiskt intervall och tydlig relation mellan koncentration och effekt/toxicitet","När alla doser ger identisk koncentration hos alla","När läkemedlet saknar mätbar koncentration","Endast för receptfria hudkrämer"],x:0,e:"TDM är mest värdefull när koncentration säger mer än dos, variationen mellan individer är stor och fel exponering har viktiga konsekvenser."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",q:"En patient har kraftigt nedsatt njurfunktion. Vilken parameter behöver oftast justeras för ett huvudsakligen renalt eliminerat läkemedel?",a:["Underhållsdos eller dosintervall","Laddningsdos enbart oberoende av Vd","Receptoraffinitet","Tablettens sönderfallstid enbart"],x:0,e:"Minskad renal clearance kräver ofta lägre underhållsdos eller längre dosintervall. Laddningsdos påverkas främst om distributionsvolymen ändrats."},
+      {c:"Klinisk farmakologi",d:"Grund",q:"Vad är en farmakodynamisk läkemedelsinteraktion?",a:["Två läkemedel påverkar samma fysiologiska system utan att nödvändigtvis ändra varandras koncentrationer","Ett läkemedel ändrar alltid ett annats absorption","Två läkemedel har samma handelsnamn","En interaktion som bara sker i levern"],x:0,e:"Farmakodynamiska interaktioner kan vara additiva, synergistiska eller antagonistiska på effektnivå, till exempel två substanser som båda ökar blödningsrisk."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",q:"Varför kan QT-förlängande läkemedel i kombination vara riskabla?",a:["De kan additivt öka risken för torsade de pointes","De orsakar alltid bradykardi utan arytmi","De blockerar all renal elimination","De minskar automatiskt kaliumförlust"],x:0,e:"Kombinerad repolarisationspåverkan och riskfaktorer som hypokalemi, bradykardi eller hög exponering kan öka risken för polymorf ventrikeltakykardi."},
+      {c:"Klinisk farmakologi",d:"Grund",q:"Vad studerar farmakogenetik?",a:["Hur genetisk variation påverkar läkemedelssvar","Hur läkemedel ändrar alla gener permanent","Hur bakterier blir resistenta enbart","Hur tabletter tillverkas"],x:0,e:"Genetiska varianter i exempelvis metaboliserande enzymer, transportörer eller målproteiner kan påverka effekt, dosbehov och biverkningsrisk."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",q:"En CYP2D6-prodrug kräver aktivering. Vad kan en genetisk långsam metaboliserare uppleva?",a:["Minskad bildning av aktiv metabolit och svagare effekt","Alltid ökad aktiv metabolit","Oförändrad effekt i alla situationer","Omedelbar enzyminduktion"],x:0,e:"För en prodrug som kräver CYP2D6-aktivering kan låg enzymaktivitet ge mindre aktiv metabolit. För ett aktivt modersubstrat kan samma fenotyp i stället öka exponeringen."},
+      {c:"Klinisk farmakologi",d:"Grund",q:"Vad menas med en typ A-biverkning?",a:["En förutsägbar och ofta dosberoende reaktion utifrån läkemedlets farmakologi","En alltid allergisk reaktion","En reaktion som aldrig kan förebyggas","En effekt som endast uppstår efter utsättning"],x:0,e:"Typ A (augmented) är vanligen dosberoende och farmakologiskt förutsägbar. Typ B är mer ovanlig och inte enkelt dos- eller mekanismförutsägbar."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",q:"Vad är skillnaden mellan tolerans och beroende?",a:["Tolerans är minskad effekt vid samma dos; beroende innebär adaptation som kan ge abstinens vid utsättning","De är alltid exakt samma fenomen","Tolerans är en allergi; beroende är metabolism","Beroende innebär alltid missbruk"],x:0,e:"Fysisk dependence är en neuroadaptation och är inte liktydig med substansbrukssyndrom. Tolerans och beroende kan uppträda tillsammans eller var för sig."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",q:"Vad innebär enterohepatisk recirkulation?",a:["Ämne utsöndras i galla, återabsorberas från tarmen och återgår till cirkulationen","Läkemedel filtreras två gånger i samma glomerulus","En dos går direkt från tarm till njure","Läkemedlet passerar aldrig levern"],x:0,e:"Gallutsöndrad substans eller konjugat kan återaktiveras i tarmen och återabsorberas, vilket ibland ger sekundära koncentrationstoppar och förlängd exponering."},
+      {c:"Klinisk farmakologi",d:"Grund",q:"Vilken kombination beskriver synergism?",a:["Den sammanlagda effekten är större än summan av de enskilda effekterna","Den sammanlagda effekten är exakt summan","Ett läkemedel saknar helt effekt","Båda läkemedlen får lägre koncentration"],x:0,e:"Vid synergism överstiger kombinationseffekten den förväntade additiva effekten. Additiv effekt är i stället ungefär summan av delarna."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Ett läkemedel har hög hepatisk extraktionsgrad. Vilken faktor påverkar dess hepatiska clearance ofta mest?",a:["Leverblodflödet","Enbart plasmaproteinbindningen","Enbart urinens pH","Receptorernas densitet"],x:0,e:"För läkemedel med hög extraktion är leverns kapacitet stor relativt tillflödet, så clearance blir ofta flödesbegränsad. Vid låg extraktion spelar fri fraktion och intrinsic clearance större roll."},
+      {c:"Farmakokinetik",d:"Fördjupning",q:"Vad händer med ackumulationsgraden om dosintervallet kortas men dosen per tillfälle behålls?",a:["Den ökar","Den minskar alltid till noll","Den påverkas inte","Biotillgängligheten blir 100 %"],x:0,e:"Tätare dosering ger mindre tid för elimination mellan doserna och därmed större ackumulation samt högre genomsnittlig steady state-koncentration."},
+      {c:"Farmakodynamik",d:"Fördjupning",q:"Vad är biased agonism (funktionell selektivitet)?",a:["En ligand stabiliserar receptorsignalering mot vissa nedströms vägar mer än andra","En ligand binder bara på ena kroppshalvan","En antagonist saknar kemisk selektivitet","Ett läkemedel absorberas olika beroende på föda"],x:0,e:"Olika ligander vid samma receptor kan gynna olika konformationer och därmed signalvägar, exempelvis G-protein jämfört med β-arrestin."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Vad är ett vanligt mål med att blockera ett metabolt 'soft spot' i en läkemedelskandidat?",a:["Öka metabol stabilitet och ibland halveringstid","Eliminera all målbindning","Alltid öka molekylens laddning","Göra substansen till en biologisk antikropp"],x:0,e:"Kemisk modifiering kring en snabbt metaboliserad position kan minska clearance, men måste balanseras mot potens, löslighet och risk för andra metaboliter."},
+      {c:"Läkemedelskemi",d:"Fördjupning",q:"Varför kan hög lipofilicitet bli problematisk i läkemedelsutveckling?",a:["Den kan ge låg löslighet, ospecifik bindning, hög metabolism och toxicitetsrisk","Den garanterar alltid perfekt oral absorption","Den förhindrar all proteinbindning","Den gör substansen permanent joniserad"],x:0,e:"Lipofilicitet kan gynna permeabilitet och bindning upp till en punkt, men för hög lipofilicitet är ofta kopplad till sämre löslighet, promiscuös bindning och utvecklingsrisk."},
+      {c:"Läkemedelskemi",d:"Grund",i:"aspirin.png",q:"Vilka två funktionella grupper syns tydligast i strukturen?",a:["Karboxylsyra och ester","Amin och amid","Alkohol och keton","Eter och sulfonamid"],x:0,e:"Acetylsalicylsyra har en karboxylsyra direkt på aromatringen och en acetylester kopplad via fenoliskt syre."},
+      {c:"Läkemedelskemi",d:"Grund",i:"aspirin.png",q:"Vilket välkänt läkemedel visas i strukturbilden?",a:["Acetylsalicylsyra (aspirin)","Paracetamol","Ibuprofen","Koffein"],x:0,e:"Strukturen är acetylsalicylsyra: en salicylsyra där fenolgruppen har acetylerats till en ester."},
+      {c:"Läkemedelskemi",d:"Grund",i:"paracetamol.png",q:"Vilken kombination av funktionella grupper finns i denna struktur?",a:["Fenol och amid","Karboxylsyra och ester","Tertiär amin och keton","Tiol och sulfon"],x:0,e:"Paracetamol har en fenolisk hydroxylgrupp och en acetamid i para-position på bensenringen."},
+      {c:"Klinisk farmakologi",d:"Fördjupning",i:"paracetamol.png",q:"Vilken grupp i strukturen är ett viktigt säte för konjugering med glukuronsyra eller sulfat?",a:["Den fenoliska hydroxylgruppen","Amidkvävet enbart","Aromatringens kolatomer","Metylgruppen enbart"],x:0,e:"Paracetamols fenoliska OH-grupp konjugeras i stor omfattning genom glukuronidering och sulfatering. En mindre del går via oxidativ metabolism."},
+      {c:"Läkemedelskemi",d:"Fördjupning",i:"ibuprofen.png",q:"Hur många stereogena kolcentra har ibuprofenstrukturen?",a:["Ett","Inga","Två","Fyra"],x:0,e:"Kolet intill karboxylgruppen binder fyra olika substituenter och är stereogent. Vanligt ibuprofen är racemat, medan S-enantiomeren står för huvuddelen av COX-hämningen."},
+      {c:"Läkemedelskemi",d:"Grund",i:"caffeine.png",q:"Hur många vätebindningsdonatorer har koffeinstrukturen?",a:["Noll","En","Två","Fyra"],x:0,e:"Koffein saknar N–H- och O–H-bindningar och har därför inga vätebindningsdonatorer, även om molekylen har flera acceptorer."},
+      {c:"Läkemedelskemi",d:"Grund",i:"dopamine.png",q:"Vilket strukturellt motiv känner du igen i dopamin?",a:["Katekolring och primär amin","β-laktam och karboxylsyra","Steroidkärna och keton","Purinring och amid"],x:0,e:"Dopamin är en katekolamin: en bensenring med två intilliggande hydroxylgrupper samt en tvåkolskedja som slutar i en primär amin."},
+      {c:"Läkemedelskemi",d:"Fördjupning",i:"lidocaine.png",q:"Vilken atomgrupp protoneras främst vid fysiologiskt pH och bidrar till lidokains vattenlösliga katjonform?",a:["Den tertiära aminen","Amidens karbonylsyre","Bensenringen","Amidkvävet"],x:0,e:"Den tertiära dietylaminen är basisk och kan protoneras. Balansen mellan oladdad och laddad form är central för membranpassage respektive bindning i natriumkanalen."}
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const pageParams = new URLSearchParams(window.location.search);
+    const portalName = (pageParams.get("name") || "").trim().slice(0, 24);
+    if (pageParams.get("embed") === "1") document.body.classList.add("embed");
+    const screens = [$("startScreen"), $("quizScreen"), $("resultScreen")];
+    let game = { items: [], index: 0, score: 0, streak: 0, answered: false, submitted: false, stats: {} };
+
+    function shuffle(values) {
+      const copy = [...values];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function show(screen) {
+      screens.forEach((node) => node.classList.toggle("active", node === screen));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goHome() {
+      show($("startScreen"));
+    }
+
+    function goLeaderboard() {
+      show($("startScreen"));
+      loadLeaderboard();
+      window.setTimeout(() => $("leaderboardPanel").scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    }
+
+    function eligibleQuestions() {
+      const category = $("categorySelect").value;
+      const difficulty = $("difficultySelect").value;
+      return questions.filter((item) => (category === "all" || item.c === category) && (difficulty === "all" || item.d === difficulty));
+    }
+
+    function updateAvailableCount() {
+      const available = eligibleQuestions().length;
+      $("bankCount").textContent = `${questions.length} frågor i banken · ${available} matchar ditt val`;
+      [...$("countSelect").options].forEach((option) => {
+        if (option.value !== "all") option.disabled = Number(option.value) > available;
+      });
+      if ($("countSelect").selectedOptions[0].disabled) $("countSelect").value = "all";
+    }
+
+    function startGame() {
+      const pool = shuffle(eligibleQuestions());
+      const requested = $("countSelect").value === "all" ? pool.length : Number($("countSelect").value);
+      game = { items: pool.slice(0, requested), index: 0, score: 0, streak: 0, answered: false, submitted: false, stats: {} };
+      show($("quizScreen"));
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      game.answered = false;
+      const item = game.items[game.index];
+      $("progressCopy").textContent = `Fråga ${game.index + 1} av ${game.items.length}`;
+      $("progressBar").style.width = `${(game.index / game.items.length) * 100}%`;
+      $("scoreValue").textContent = game.score;
+      $("streakValue").textContent = game.streak;
+      $("categoryTag").textContent = item.c;
+      $("difficultyTag").textContent = item.d;
+      if (item.i) {
+        $("moleculeImage").src = `assets/${item.i}`;
+        $("moleculeImage").alt = "Tvådimensionell molekylstruktur för frågan";
+        $("moleculeCard").hidden = false;
+      } else {
+        $("moleculeCard").hidden = true;
+        $("moleculeImage").removeAttribute("src");
+        $("moleculeImage").alt = "";
+      }
+      $("questionText").textContent = item.q;
+      $("feedback").classList.remove("show");
+      const choices = shuffle(item.a.map((text, index) => ({ text, correct: index === item.x })));
+      $("answers").replaceChildren(...choices.map((choice, index) => {
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.innerHTML = `<span class="letter">${String.fromCharCode(65 + index)}</span><span></span>`;
+        button.lastElementChild.textContent = choice.text;
+        button.addEventListener("click", () => answer(button, choice.correct, choices));
+        return button;
+      }));
+    }
+
+    function answer(button, correct, choices) {
+      if (game.answered) return;
+      game.answered = true;
+      const item = game.items[game.index];
+      const buttons = [...$("answers").children];
+      buttons.forEach((node, index) => {
+        node.disabled = true;
+        if (choices[index].correct) node.classList.add("correct");
+      });
+      if (!correct) button.classList.add("wrong");
+      if (correct) { game.score++; game.streak++; } else { game.streak = 0; }
+      game.stats[item.c] ??= { right: 0, total: 0 };
+      game.stats[item.c].total++;
+      if (correct) game.stats[item.c].right++;
+      $("scoreValue").textContent = game.score;
+      $("streakValue").textContent = game.streak;
+      $("feedbackTitle").textContent = correct ? "Rätt! Snyggt resonerat." : "Inte riktigt – här är kopplingen.";
+      $("feedbackTitle").style.color = correct ? "var(--green)" : "var(--red)";
+      $("feedbackText").textContent = item.e;
+      $("nextButton").textContent = game.index === game.items.length - 1 ? "Visa resultat →" : "Nästa fråga →";
+      $("feedback").classList.add("show");
+      $("feedback").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function nextQuestion() {
+      if (!game.answered) return;
+      game.index++;
+      if (game.index >= game.items.length) finishGame(); else renderQuestion();
+    }
+
+    function finishGame() {
+      const percent = Math.round((game.score / game.items.length) * 100);
+      const previousBest = Number(localStorage.getItem("pharmatest-best") || 0);
+      if (percent > previousBest) localStorage.setItem("pharmatest-best", String(percent));
+      updateBest();
+      $("resultPercent").textContent = `${percent}%`;
+      $("resultFraction").textContent = `${game.score} av ${game.items.length} rätt`;
+      if (percent >= 90) {
+        $("resultHeading").textContent = "Receptorreserven är intakt.";
+        $("resultMessage").textContent = "Mycket starkt resultat. Du håller ihop mekanism, exponering och molekylär design på en avancerad nivå.";
+      } else if (percent >= 70) {
+        $("resultHeading").textContent = "Stabil terapeutisk nivå.";
+        $("resultMessage").textContent = "Bra kontroll på helheten. Läs förklaringarna till missarna och kör en riktad omgång på ditt svagaste område.";
+      } else if (percent >= 50) {
+        $("resultHeading").textContent = "På väg mot steady state.";
+        $("resultMessage").textContent = "Grunderna sitter delvis. En ny omgång med tio frågor inom ett enda område är en bra nästa dos.";
+      } else {
+        $("resultHeading").textContent = "Dags för en laddningsdos kunskap.";
+        $("resultMessage").textContent = "Ingen fara – quizet är byggt för repetition. Börja med grundnivån och använd förklaringarna som minikort.";
+      }
+      $("breakdown").replaceChildren(...Object.entries(game.stats).map(([category, stat]) => {
+        const row = document.createElement("div");
+        row.className = "break-row";
+        row.innerHTML = `<span></span><strong>${stat.right}/${stat.total}</strong>`;
+        row.firstElementChild.textContent = category;
+        return row;
+      }));
+      $("playerName").value = portalName || localStorage.getItem("pharmatest-name") || "";
+      $("saveStatus").textContent = "";
+      $("saveScoreButton").disabled = false;
+      game.submitted = false;
+      show($("resultScreen"));
+    }
+
+    function renderLeaderboard(entries) {
+      const container = $("leaderboard");
+      if (!entries.length) {
+        container.innerHTML = '<div class="leader-empty">Ingen har sparat ett resultat ännu. Bli först!</div>';
+        return;
+      }
+      container.replaceChildren(...entries.slice(0, 10).map((entry) => {
+        const row = document.createElement("div");
+        row.className = "leader-row";
+        const rank = document.createElement("span");
+        rank.className = "rank";
+        rank.textContent = entry.rank;
+        const name = document.createElement("span");
+        name.className = "leader-name";
+        name.textContent = entry.name;
+        const score = document.createElement("span");
+        score.className = "leader-score";
+        score.innerHTML = `<strong>${Math.round(entry.percent)}%</strong>${entry.score}/${entry.total}`;
+        row.append(rank, name, score);
+        return row;
+      }));
+    }
+
+    async function loadLeaderboard() {
+      try {
+        const response = await fetch("/api/pharmatest/leaderboard", { cache: "no-store" });
+        if (!response.ok) throw new Error("Kunde inte hämta topplistan");
+        const payload = await response.json();
+        renderLeaderboard(payload.leaderboard || []);
+      } catch (error) {
+        $("leaderboard").innerHTML = '<div class="leader-empty">Topplistan är tillfälligt otillgänglig.</div>';
+      }
+    }
+
+    async function saveScore() {
+      if (game.submitted) return;
+      const name = $("playerName").value.trim().replace(/\s+/g, " ");
+      if (!name || name.length > 24) {
+        $("saveStatus").textContent = "Skriv ett namn med 1–24 tecken.";
+        return;
+      }
+      $("saveScoreButton").disabled = true;
+      $("saveStatus").textContent = "Sparar…";
+      try {
+        const response = await fetch("/api/pharmatest/scores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, score: game.score, total: game.items.length })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Resultatet kunde inte sparas");
+        if (!portalName) localStorage.setItem("pharmatest-name", name);
+        game.submitted = true;
+        renderLeaderboard(payload.leaderboard || []);
+        $("saveStatus").textContent = payload.accepted
+          ? (payload.rank ? `Sparat! Du ligger på plats ${payload.rank}.` : "Sparat!")
+          : "Ditt tidigare resultat med det namnet är fortfarande bättre.";
+      } catch (error) {
+        $("saveScoreButton").disabled = false;
+        $("saveStatus").textContent = error.message || "Resultatet kunde inte sparas.";
+      }
+    }
+
+    function updateBest() {
+      const best = localStorage.getItem("pharmatest-best");
+      $("bestScore").textContent = best === null ? "–" : `${best}%`;
+    }
+
+    $("startButton").addEventListener("click", startGame);
+    $("nextButton").addEventListener("click", nextQuestion);
+    $("retryButton").addEventListener("click", startGame);
+    $("homeButton").addEventListener("click", goHome);
+    $("navHome").addEventListener("click", goHome);
+    $("navLeaderboard").addEventListener("click", goLeaderboard);
+    $("saveScoreButton").addEventListener("click", saveScore);
+    $("playerName").addEventListener("keydown", (event) => { if (event.key === "Enter") saveScore(); });
+    $("categorySelect").addEventListener("change", updateAvailableCount);
+    $("difficultySelect").addEventListener("change", updateAvailableCount);
+    updateBest();
+    updateAvailableCount();
+    loadLeaderboard();
+  </script>
+</body>
+</html>
