@@ -37,6 +37,9 @@ DOSLAB_STATE_PATH = Path(
 PUNGDJUR_STATE_PATH = Path(
     os.environ.get("PUNGDJUR_SCORES", STATE_PATH.with_name("pungdjur-scores.toml"))
 )
+HAJAR_STATE_PATH = Path(
+    os.environ.get("HAJAR_SCORES", STATE_PATH.with_name("hajar-scores.toml"))
+)
 PORT = int(os.environ.get("PHARMATEST_PORT", "8798"))
 MAX_BODY = 4096
 MAX_SCORES = 100
@@ -182,6 +185,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/interaktioner/leaderboard": INTERAKTIONER_STATE_PATH,
             "/api/doslab/leaderboard": DOSLAB_STATE_PATH,
             "/api/pungdjur/leaderboard": PUNGDJUR_STATE_PATH,
+            "/api/hajar/leaderboard": HAJAR_STATE_PATH,
         }.get(path)
         if score_path is not None:
             try:
@@ -203,6 +207,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/interaktioner/scores": INTERAKTIONER_STATE_PATH,
             "/api/doslab/scores": DOSLAB_STATE_PATH,
             "/api/pungdjur/scores": PUNGDJUR_STATE_PATH,
+            "/api/hajar/scores": HAJAR_STATE_PATH,
         }.get(urlsplit(self.path).path)
         if score_path is None:
             self.json_response(404, {"ok": False, "error": "Hittades inte"})

@@ -190,7 +190,7 @@
           <p class="hero-copy">Här samlar vi riktiga kunskapstest och utbildningar. Diplomstatus: emotionellt bindande, juridiskt tveksam.</p>
           <div class="stats">
             <div class="ring" id="progressRing"><strong id="ringValue">0%</strong></div>
-            <div class="stat"><span class="stat-label"><i class="dot" style="background:white"></i>Tillgängliga</span><strong class="stat-value">7</strong><span class="stat-small">kurser just nu</span></div>
+            <div class="stat"><span class="stat-label"><i class="dot" style="background:white"></i>Tillgängliga</span><strong class="stat-value">8</strong><span class="stat-small">kurser just nu</span></div>
             <div class="stat"><span class="stat-label"><i class="dot" style="background:var(--blue)"></i>Pågående</span><strong class="stat-value" id="activeCount">0</strong><span class="stat-small">kunskapsprojekt</span></div>
             <div class="stat"><span class="stat-label"><i class="dot" style="background:var(--green)"></i>Genomförda</span><strong class="stat-value" id="doneCount">0</strong><span class="stat-small">över 70 %</span></div>
           </div>
@@ -276,6 +276,16 @@
                   <div class="course-foot"><span id="pungdjurScore">Inte påbörjad</span><button class="course-button" id="openPungdjur">Hoppa in i quizet</button></div>
                 </div>
               </article>
+              <article class="course-card active-course" data-course-category="Övrigt hittepå">
+                <div class="course-art" style="background:linear-gradient(145deg,#061e35,#087e8b)">🦈</div>
+                <div class="course-body">
+                  <div class="course-meta">Övrigt hittepå · 36 frågor</div>
+                  <h3>Hajprovet: trollhaj, wobbegong och ljus i djupet</h3>
+                  <p>Ett fredagsdopp bland håkäringar, gapande käkar, självlysande djuphavshajar och andra fullständigt rimliga havsmonster.</p>
+                  <div class="course-progress"><span id="hajarProgress"></span></div>
+                  <div class="course-foot"><span id="hajarScore">Inte påbörjad</span><button class="course-button" id="openHajar">Dyk ner i quizet</button></div>
+                </div>
+              </article>
             </div>
           </section>
         </div>
@@ -309,6 +319,10 @@
             <div class="section-head"><h2>🦘 Pungdjurstoppen</h2><p>Johns maraton</p></div>
             <div class="leaderboard" id="pungdjurLeaderboard"><div class="empty">Hämtar pungdjursprofessorerna…</div></div>
           </section>
+          <section class="side-card">
+            <div class="section-head"><h2>🦈 Hajtoppen</h2><p>Djupaste dyket</p></div>
+            <div class="leaderboard" id="hajarLeaderboard"><div class="empty">Lodar hajkännarna…</div></div>
+          </section>
           <section class="side-card honesty">
             <h2>Det finstilta</h2>
             <p><strong>Inbildningsportalen är en informell träningsmiljö.</strong> Resultat är till för lärande och skryt, inte kliniska beslut eller formell certifiering.</p>
@@ -325,7 +339,7 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const state = { name: "", leaderboard: [], lawLeaderboard: [], galenikLeaderboard: [], farmakognosiLeaderboard: [], interaktionerLeaderboard: [], doslabLeaderboard: [], pungdjurLeaderboard: [] };
+    const state = { name: "", leaderboard: [], lawLeaderboard: [], galenikLeaderboard: [], farmakognosiLeaderboard: [], interaktionerLeaderboard: [], doslabLeaderboard: [], pungdjurLeaderboard: [], hajarLeaderboard: [] };
 
     function initials(name) {
       return name.split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
@@ -390,7 +404,7 @@
       }));
     }
 
-    function updateProgress(entries, lawEntries, galenikEntries, farmakognosiEntries, interaktionerEntries, doslabEntries, pungdjurEntries) {
+    function updateProgress(entries, lawEntries, galenikEntries, farmakognosiEntries, interaktionerEntries, doslabEntries, pungdjurEntries, hajarEntries) {
       const own = entries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
       const lawOwn = lawEntries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
       const galenikOwn = galenikEntries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
@@ -398,6 +412,7 @@
       const interaktionerOwn = interaktionerEntries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
       const doslabOwn = doslabEntries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
       const pungdjurOwn = pungdjurEntries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
+      const hajarOwn = hajarEntries.find((entry) => entry.name.toLocaleLowerCase("sv") === state.name.toLocaleLowerCase("sv"));
       const percent = own ? Math.round(own.percent) : 0;
       const lawPercent = lawOwn ? Math.round(lawOwn.percent) : 0;
       const galenikPercent = galenikOwn ? Math.round(galenikOwn.percent) : 0;
@@ -405,8 +420,9 @@
       const interaktionerPercent = interaktionerOwn ? Math.round(interaktionerOwn.percent) : 0;
       const doslabPercent = doslabOwn ? Math.round(doslabOwn.percent) : 0;
       const pungdjurPercent = pungdjurOwn ? Math.round(pungdjurOwn.percent) : 0;
-      const courseCount = (own ? 1 : 0) + (lawOwn ? 1 : 0) + (galenikOwn ? 1 : 0) + (farmakognosiOwn ? 1 : 0) + (interaktionerOwn ? 1 : 0) + (doslabOwn ? 1 : 0) + (pungdjurOwn ? 1 : 0);
-      const overall = courseCount ? Math.round((percent + lawPercent + galenikPercent + farmakognosiPercent + interaktionerPercent + doslabPercent + pungdjurPercent) / courseCount) : 0;
+      const hajarPercent = hajarOwn ? Math.round(hajarOwn.percent) : 0;
+      const courseCount = (own ? 1 : 0) + (lawOwn ? 1 : 0) + (galenikOwn ? 1 : 0) + (farmakognosiOwn ? 1 : 0) + (interaktionerOwn ? 1 : 0) + (doslabOwn ? 1 : 0) + (pungdjurOwn ? 1 : 0) + (hajarOwn ? 1 : 0);
+      const overall = courseCount ? Math.round((percent + lawPercent + galenikPercent + farmakognosiPercent + interaktionerPercent + doslabPercent + pungdjurPercent + hajarPercent) / courseCount) : 0;
       $("ringValue").textContent = `${overall}%`;
       $("progressRing").style.setProperty("--value", `${overall}%`);
       $("courseProgress").style.width = `${percent}%`;
@@ -416,6 +432,7 @@
       $("interaktionerProgress").style.width = `${interaktionerPercent}%`;
       $("doslabProgress").style.width = `${doslabPercent}%`;
       $("pungdjurProgress").style.width = `${pungdjurPercent}%`;
+      $("hajarProgress").style.width = `${hajarPercent}%`;
       $("courseScore").textContent = own ? `Bästa resultat: ${own.score}/${own.total} (${percent} %)` : "Inte påbörjad";
       $("lawScore").textContent = lawOwn ? `Bästa resultat: ${lawOwn.score}/${lawOwn.total} (${lawPercent} %)` : "Inte påbörjad";
       $("galenikScore").textContent = galenikOwn ? `Slutprov: ${galenikOwn.score}/${galenikOwn.total} (${galenikPercent} %)` : "Inte påbörjad";
@@ -423,8 +440,9 @@
       $("interaktionerScore").textContent = interaktionerOwn ? `Slutprov: ${interaktionerOwn.score}/${interaktionerOwn.total} (${interaktionerPercent} %)` : "Inte påbörjad";
       $("doslabScore").textContent = doslabOwn ? `Slutprov: ${doslabOwn.score}/${doslabOwn.total} (${doslabPercent} %)` : "Inte påbörjad";
       $("pungdjurScore").textContent = pungdjurOwn ? `Bästa resultat: ${pungdjurOwn.score}/${pungdjurOwn.total} (${pungdjurPercent} %)` : "Inte påbörjad";
-      const active = [own, lawOwn, galenikOwn, farmakognosiOwn, interaktionerOwn, doslabOwn, pungdjurOwn].filter((entry) => entry && entry.percent < 70).length;
-      const done = [own, lawOwn, galenikOwn, farmakognosiOwn, interaktionerOwn, doslabOwn, pungdjurOwn].filter((entry) => entry && entry.percent >= 70).length;
+      $("hajarScore").textContent = hajarOwn ? `Bästa resultat: ${hajarOwn.score}/${hajarOwn.total} (${hajarPercent} %)` : "Inte påbörjad";
+      const active = [own, lawOwn, galenikOwn, farmakognosiOwn, interaktionerOwn, doslabOwn, pungdjurOwn, hajarOwn].filter((entry) => entry && entry.percent < 70).length;
+      const done = [own, lawOwn, galenikOwn, farmakognosiOwn, interaktionerOwn, doslabOwn, pungdjurOwn, hajarOwn].filter((entry) => entry && entry.percent >= 70).length;
       $("courseStatus").textContent = done ? `${done} genomförd${done > 1 ? "a" : ""}` : active ? "Pågående" : "Nya kurser";
       $("activeCount").textContent = active;
       $("doneCount").textContent = done;
@@ -435,21 +453,23 @@
       $("openInteraktioner").textContent = interaktionerOwn ? "Repetera RiskLab" : "Starta RiskLab";
       $("openDosLab").textContent = doslabOwn ? "Repetera DosLab" : "Starta DosLab";
       $("openPungdjur").textContent = pungdjurOwn ? "Förbättra hoppet" : "Hoppa in i quizet";
+      $("openHajar").textContent = hajarOwn ? "Förbättra djupet" : "Dyk ner i quizet";
     }
 
     async function loadLeaderboard() {
       try {
-        const [pharmaResponse, lawResponse, galenikResponse, farmakognosiResponse, interaktionerResponse, doslabResponse, pungdjurResponse] = await Promise.all([
+        const [pharmaResponse, lawResponse, galenikResponse, farmakognosiResponse, interaktionerResponse, doslabResponse, pungdjurResponse, hajarResponse] = await Promise.all([
           fetch("/api/pharmatest/leaderboard", { cache: "no-store" }),
           fetch("/api/forfattning/leaderboard", { cache: "no-store" }),
           fetch("/api/galenik/leaderboard", { cache: "no-store" }),
           fetch("/api/farmakognosi/leaderboard", { cache: "no-store" }),
           fetch("/api/interaktioner/leaderboard", { cache: "no-store" }),
           fetch("/api/doslab/leaderboard", { cache: "no-store" }),
-          fetch("/api/pungdjur/leaderboard", { cache: "no-store" })
+          fetch("/api/pungdjur/leaderboard", { cache: "no-store" }),
+          fetch("/api/hajar/leaderboard", { cache: "no-store" })
         ]);
-        if (!pharmaResponse.ok || !lawResponse.ok || !galenikResponse.ok || !farmakognosiResponse.ok || !interaktionerResponse.ok || !doslabResponse.ok || !pungdjurResponse.ok) throw new Error();
-        const [pharmaPayload, lawPayload, galenikPayload, farmakognosiPayload, interaktionerPayload, doslabPayload, pungdjurPayload] = await Promise.all([pharmaResponse.json(), lawResponse.json(), galenikResponse.json(), farmakognosiResponse.json(), interaktionerResponse.json(), doslabResponse.json(), pungdjurResponse.json()]);
+        if (!pharmaResponse.ok || !lawResponse.ok || !galenikResponse.ok || !farmakognosiResponse.ok || !interaktionerResponse.ok || !doslabResponse.ok || !pungdjurResponse.ok || !hajarResponse.ok) throw new Error();
+        const [pharmaPayload, lawPayload, galenikPayload, farmakognosiPayload, interaktionerPayload, doslabPayload, pungdjurPayload, hajarPayload] = await Promise.all([pharmaResponse.json(), lawResponse.json(), galenikResponse.json(), farmakognosiResponse.json(), interaktionerResponse.json(), doslabResponse.json(), pungdjurResponse.json(), hajarResponse.json()]);
         state.leaderboard = pharmaPayload.leaderboard || [];
         state.lawLeaderboard = lawPayload.leaderboard || [];
         state.galenikLeaderboard = galenikPayload.leaderboard || [];
@@ -457,6 +477,7 @@
         state.interaktionerLeaderboard = interaktionerPayload.leaderboard || [];
         state.doslabLeaderboard = doslabPayload.leaderboard || [];
         state.pungdjurLeaderboard = pungdjurPayload.leaderboard || [];
+        state.hajarLeaderboard = hajarPayload.leaderboard || [];
         renderLeaderboard(state.leaderboard);
         renderLeaderboard(state.lawLeaderboard, "lawLeaderboard");
         renderLeaderboard(state.galenikLeaderboard, "galenikLeaderboard");
@@ -464,7 +485,8 @@
         renderLeaderboard(state.interaktionerLeaderboard, "interaktionerLeaderboard");
         renderLeaderboard(state.doslabLeaderboard, "doslabLeaderboard");
         renderLeaderboard(state.pungdjurLeaderboard, "pungdjurLeaderboard");
-        updateProgress(state.leaderboard, state.lawLeaderboard, state.galenikLeaderboard, state.farmakognosiLeaderboard, state.interaktionerLeaderboard, state.doslabLeaderboard, state.pungdjurLeaderboard);
+        renderLeaderboard(state.hajarLeaderboard, "hajarLeaderboard");
+        updateProgress(state.leaderboard, state.lawLeaderboard, state.galenikLeaderboard, state.farmakognosiLeaderboard, state.interaktionerLeaderboard, state.doslabLeaderboard, state.pungdjurLeaderboard, state.hajarLeaderboard);
       } catch {
         $("leaderboard").innerHTML = '<div class="empty">Topplistan är tillfälligt på kafferast.</div>';
         $("lawLeaderboard").innerHTML = '<div class="empty">Topplistan är tillfälligt på kafferast.</div>';
@@ -473,6 +495,7 @@
         $("interaktionerLeaderboard").innerHTML = '<div class="empty">Topplistan är tillfälligt på kafferast.</div>';
         $("doslabLeaderboard").innerHTML = '<div class="empty">Topplistan är tillfälligt på kafferast.</div>';
         $("pungdjurLeaderboard").innerHTML = '<div class="empty">Topplistan är tillfälligt ute och hoppar.</div>';
+        $("hajarLeaderboard").innerHTML = '<div class="empty">Hajtoppen har tillfälligt gått under ytan.</div>';
       }
     }
 
@@ -491,6 +514,7 @@
     $("openInteraktioner").addEventListener("click", () => openCourse("/interaktioner/", "RiskLab · interaktioner och riskbedömning"));
     $("openDosLab").addEventListener("click", () => openCourse("/doslab/", "DosLab · dos, spädning och infusion"));
     $("openPungdjur").addEventListener("click", () => openCourse("/pungdjursquiz/", "Pungdjursprovet · Johns önskekurs"));
+    $("openHajar").addEventListener("click", () => openCourse("/hajquiz/", "Hajprovet · fredagsdyket"));
     $("backToPortal").addEventListener("click", () => { showDashboard(); loadLeaderboard(); });
     document.querySelectorAll("[data-scroll]").forEach((button) => button.addEventListener("click", () => {
       showDashboard();

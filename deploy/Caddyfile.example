@@ -77,3 +77,10 @@ handle_path /pungdjursquiz/* {
 	root * /srv/apothictech-site/pungdjursquiz
 	file_server
 }
+
+@hajquizExact path /hajquiz
+redir @hajquizExact /hajquiz/ 308
+handle_path /hajquiz/* {
+	root * /srv/apothictech-site/hajquiz
+	file_server
+}

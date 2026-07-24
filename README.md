@@ -12,7 +12,7 @@ Live: <https://apothictech.se/inbildningsportalen/>
 - `deploy/pharmatest.service` – användartjänsten som kör API:t.
 - `deploy/Caddyfile.example` – endast de Caddy-handlers som portalen behöver.
 
-Kurserna är PharmaTest, Författningstestet, Galeniklabbet, Farmakognosiprovet, RiskLab, DosLab och Pungdjursprovet.
+Kurserna är PharmaTest, Författningstestet, Galeniklabbet, Farmakognosiprovet, RiskLab, DosLab, Pungdjursprovet och Hajprovet.
 
 ## Lokal kontroll
 
